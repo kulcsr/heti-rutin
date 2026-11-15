@@ -112,6 +112,9 @@ table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .ex .head{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
 .ex .head b{font-size:17px}
 .ex .chip{align-self:flex-start}
+.dose{display:flex;gap:6px;flex-wrap:wrap}
+.dz{background:var(--accent-soft);border-radius:8px;padding:4px 10px;font-size:14px;display:inline-flex;align-items:baseline;gap:5px}
+.dz b{color:var(--accent);font-family:var(--display);font-size:20px;line-height:1;font-variant-numeric:tabular-nums}
 .illu{background:var(--bg);border-radius:10px;padding:6px 4px 2px}
 .illu svg{width:100%;max-width:340px;height:auto;display:block;margin:0 auto}
 .illu .ln{stroke:var(--ink);stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
@@ -127,8 +130,8 @@ table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 details.help{background:var(--accent-soft);border-radius:12px;padding:12px 14px}
 details.help summary{cursor:pointer;font-weight:700;color:var(--accent)}
 details.help ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px}
-.sets{display:grid;grid-template-columns:28px 1fr 1fr;gap:6px;align-items:center}
-.sets.one{grid-template-columns:28px 1fr}
+.sets{display:grid;grid-template-columns:62px 1fr 1fr;gap:6px;align-items:center}
+.sets.one{grid-template-columns:62px 1fr}
 .sets .sn{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .sets input{height:40px;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:0 10px;width:100%;font-variant-numeric:tabular-nums}
 .sets .hd{font-size:12px;color:var(--muted)}
@@ -466,6 +469,15 @@ function illu(name){
   }
   return s+'</svg></div>';
 }
+function dose(e){
+  var reps=e.t.split("×")[1].trim(),r;
+  var setsH='<span class="dz"><b>'+e.s+'</b> sorozat</span>';
+  var m=reps.match(/^(\d+) mp\s*(.*)$/);
+  if(m)r='<span class="dz"><b>'+m[1]+' mp</b> tartás'+(m[2]?' '+esc(m[2]):'')+'</span>';
+  else if((m=reps.match(/^([\d–-]+)\s*(.*)$/)))r='<span class="dz"><b>'+m[1]+'</b> ismétlés'+(m[2]?' '+esc(m[2]):'')+'</span>';
+  else r='<span class="dz">Ismétlés: <b>'+esc(reps)+'</b></span>';
+  return '<div class="dose">'+setsH+r+'</div>';
+}
 function lastLog(k,name){
   var ks=Object.keys(state.logs).filter(function(x){return x<k;}).sort().reverse();
   for(var i=0;i<ks.length;i++){var l=state.logs[ks[i]];if(l&&l.ex&&l.ex[name]&&l.ex[name].some(function(s){return s&&(s.kg||s.r);}))return {k:ks[i],sets:l.ex[name]};}
@@ -483,7 +495,7 @@ function vWorkout(){
   html+='<details class="help"><summary>Hogyan működik ez a fül?</summary><ol>'+
     '<li>Fent válaszd ki az edzést (A, B vagy C). Alapból a mai napra tervezett jelenik meg.</li>'+
     '<li>Minden gyakorlatnál a rajz mutatja a mozdulatot: balra a kiinduló helyzet, a nyíl után a végpont. A kék elem a súlyzó, a narancs szaggatott vonal a gumiszalag, a halványabb végtag a túloldali kar vagy láb.</li>'+
-    '<li>Alatta a sorozatok: írd be, hány kg-mal és hány ismétlést csináltál. A szürke szám a legutóbbi eredményed, ezt kell elérned vagy megdöntened.</li>'+
+    '<li>A kék címkék mutatják, hány sorozatot és sorozatonként hány ismétlést csinálj. Alatta a táblázat: soronként egy sorozat, írd be, hány kg-mal és hány ismétlést csináltál. A szürke szám a legutóbbi eredményed, ezt kell elérned vagy megdöntened.</li>'+
     '<li>Ha legutóbb minden sorozatban megvolt a 12 ismétlés, zöld jelzés szól, hogy válts nehezebb súlyra.</li>'+
     '<li>A végén nyomd meg az <b>Edzés kész</b> gombot. Ez kipipálja a mozgást a Ma fülön.</li></ol></details>';
   html+='<div class="seg" role="group" aria-label="Edzés választása">'+["A","B","C"].map(function(x){return '<button class="'+(x===type?'on':'')+'" data-act="wtype" data-t="'+x+'">'+x+' edzés</button>';}).join('')+'</div>';
@@ -493,14 +505,14 @@ function vWorkout(){
     var hint='';
     if(last){var full=last.sets.filter(function(s){return s&&s.r;});var goal=e.u==="sec"?parseInt(e.t.match(/(\d+) mp/)[1],10):12;
       if(full.length&&full.every(function(s){return num(s.r)>=goal;}))hint='<span class="chip good">Ideje nehezebbre váltani</span>';}
-    html+='<div class="ex"><div class="head"><b>'+(ei+1)+'. '+esc(e.n)+'</b><span class="muted small">'+esc(e.t)+'</span></div>'+
+    html+='<div class="ex"><div class="head"><b>'+(ei+1)+'. '+esc(e.n)+'</b></div>'+dose(e)+
       illu(e.n)+'<span class="muted small">'+esc(e.tip)+(last?' · Legutóbb ('+fmtShort(last.k)+'): '+last.sets.filter(function(s){return s&&(s.kg||s.r);}).map(function(s){return (s.kg?s.kg+' kg × ':'')+(s.r||'?');}).join(', '):'')+'</span>'+hint;
     var one=e.u!=="kg";
-    html+='<div class="sets'+(one?' one':'')+'"><span></span>'+(one?'<span class="hd">'+(e.u==="sec"?'Másodperc':'Ismétlés')+'</span>':'<span class="hd">Súly (kg)</span><span class="hd">Ismétlés</span>');
+    html+='<div class="sets'+(one?' one':'')+'"><span class="hd">Sorozat</span>'+(one?'<span class="hd">'+(e.u==="sec"?'Másodperc':'Ismétlés')+'</span>':'<span class="hd">Súly (kg)</span><span class="hd">Ismétlés</span>');
     for(var si=0;si<e.s;si++){var c=cur[si]||{},l=last&&last.sets[si]||{};
-      html+='<span class="sn">'+(si+1)+'.</span>';
-      if(!one)html+='<input id="w-'+ei+'-'+si+'-kg" inputmode="decimal" data-log="'+ei+'" data-set="'+si+'" data-f="kg" value="'+esc(c.kg||'')+'" placeholder="'+esc(l.kg||'')+'" aria-label="'+esc(e.n)+' '+(si+1)+'. sorozat súly">';
-      html+='<input id="w-'+ei+'-'+si+'-r" inputmode="numeric" pattern="[0-9]*" data-log="'+ei+'" data-set="'+si+'" data-f="r" value="'+esc(c.r||'')+'" placeholder="'+esc(l.r||'')+'" aria-label="'+esc(e.n)+' '+(si+1)+'. sorozat ismétlés">';
+      html+='<span class="sn">'+(si+1)+'. sorozat</span>';
+      if(!one)html+='<input id="w-'+ei+'-'+si+'-kg" inputmode="decimal" data-log="'+ei+'" data-set="'+si+'" data-f="kg" value="'+esc(c.kg||'')+'" placeholder="'+esc(l.kg||'pl. 8')+'" aria-label="'+esc(e.n)+' '+(si+1)+'. sorozat súly">';
+      html+='<input id="w-'+ei+'-'+si+'-r" inputmode="numeric" pattern="[0-9]*" data-log="'+ei+'" data-set="'+si+'" data-f="r" value="'+esc(c.r||'')+'" placeholder="'+esc(l.r||(e.u==="sec"?'pl. 40':'pl. 10'))+'" aria-label="'+esc(e.n)+' '+(si+1)+'. sorozat ismétlés">';
     }
     html+='</div></div>';
   });
