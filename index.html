@@ -112,6 +112,21 @@ table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .ex .head{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
 .ex .head b{font-size:17px}
 .ex .chip{align-self:flex-start}
+.illu{background:var(--bg);border-radius:10px;padding:6px 4px 2px}
+.illu svg{width:100%;max-width:340px;height:auto;display:block;margin:0 auto}
+.illu .ln{stroke:var(--ink);stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.illu .far{stroke:var(--muted);opacity:.55}
+.illu .hd{fill:var(--ink)}
+.illu .gr{stroke:var(--line);stroke-width:2}
+.illu .prop{fill:var(--accent)}
+.illu .propl{stroke:var(--accent);stroke-width:2.5;stroke-linecap:round}
+.illu .band{stroke:var(--warn);stroke-width:2;stroke-dasharray:3 3;fill:none}
+.illu .bench{fill:var(--line)}
+.illu .arw{stroke:var(--accent);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.illu .cap{fill:var(--muted);font-size:9px;font-family:var(--body);font-weight:600}
+details.help{background:var(--accent-soft);border-radius:12px;padding:12px 14px}
+details.help summary{cursor:pointer;font-weight:700;color:var(--accent)}
+details.help ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px}
 .sets{display:grid;grid-template-columns:28px 1fr 1fr;gap:6px;align-items:center}
 .sets.one{grid-template-columns:28px 1fr}
 .sets .sn{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -403,6 +418,54 @@ function vWeek(){
   return html;
 }
 
+
+// ---------- exercise illustrations (side view stick figures, 100x100 panels, ground at y=95) ----------
+var STAND={h:[50,20],s:[50,31],p:[50,58],k1:[51,76],f1:[52,94],k2:[49,76],f2:[48,94],e1:[51,44],w1:[51,57],e2:[49,44],w2:[49,57]};
+function P(o){var r={},k;for(k in STAND)r[k]=STAND[k];for(k in o)r[k]=o[k];return r;}
+var ILLU={
+ "Goblet guggolás":{db:1,a:P({e1:[57,40],w1:[56,34],e2:[55,40],w2:[54,34]}),b:P({h:[53,33],s:[48,43],p:[36,70],k1:[58,70],f1:[52,94],k2:[56,71],f2:[50,94],e1:[58,53],w1:[57,46],e2:[56,53],w2:[55,46]}),ca:"Állva",cb:"Csípő hátra-le"},
+ "Fekvőtámasz":{a:P({h:[20,58],s:[28,64],p:[58,74],k1:[73,82],f1:[90,91],k2:[73,82],f2:[90,91],e1:[28,79],w1:[28,94],e2:[28,79],w2:[28,94]}),b:P({h:[20,77],s:[28,83],p:[58,87],k1:[73,89],f1:[90,92],k2:[73,89],f2:[90,92],e1:[40,78],w1:[30,94],e2:[40,78],w2:[30,94]}),ca:"Kar nyújtva",cb:"Mellkas le"},
+ "Egykezes evezés":{db:1,bench:[12,66,38],a:P({h:[26,40],s:[36,46],p:[64,52],k1:[66,72],f1:[68,94],k2:[60,72],f2:[60,94],e2:[34,56],w2:[34,66],e1:[38,61],w1:[38,76]}),b:P({h:[26,40],s:[36,46],p:[64,52],k1:[66,72],f1:[68,94],k2:[60,72],f2:[60,94],e2:[34,56],w2:[34,66],e1:[54,40],w1:[46,56]}),ca:"Kar lóg",cb:"Könyök fel"},
+ "Román felhúzás":{db:2,a:P({e1:[51,45],w1:[52,60],e2:[49,45],w2:[50,60]}),b:P({h:[26,36],s:[36,42],p:[62,54],k1:[58,74],f1:[54,94],k2:[56,74],f2:[52,94],e1:[37,56],w1:[38,70],e2:[35,56],w2:[36,70]}),ca:"Állva",cb:"Csípőből előre"},
+ "Plank":{a:P({h:[20,70],s:[28,76],p:[58,80],k1:[73,85],f1:[90,91],k2:[73,85],f2:[90,91],e1:[28,92],w1:[42,92],e2:[28,92],w2:[42,92]}),ca:"Tartsd egyenesen"},
+ "Hátralépéses kitörés":{db:2,a:P({}),b:P({h:[48,32],s:[48,43],p:[48,68],k1:[62,70],f1:[62,94],k2:[38,90],f2:[24,93],e1:[49,56],w1:[49,68],e2:[47,56],w2:[47,68]}),ca:"Állva",cb:"Lépj hátra"},
+ "Vállból nyomás állva":{db:2,a:P({e1:[57,42],w1:[56,31],e2:[55,42],w2:[54,31]}),b:P({e1:[49,17],w1:[49,4],e2:[47,17],w2:[47,4]}),ca:"Vállnál",cb:"Fej fölé"},
+ "Húzódzkodás":{bar:14,a:P({h:[55,31],s:[50,39],p:[50,64],k1:[47,78],f1:[39,88],k2:[45,78],f2:[37,88],e1:[50,27],w1:[50,14],e2:[49,27],w2:[49,14]}),b:P({h:[55,9],s:[50,22],p:[50,48],k1:[47,62],f1:[39,72],k2:[45,62],f2:[37,72],e1:[40,27],w1:[50,14],e2:[39,27],w2:[49,14]}),ca:"Lógás",cb:"Áll a rúd fölé"},
+ "Csípőemelés":{db:1,a:P({h:[16,86],s:[26,88],p:[54,90],k1:[68,74],f1:[78,93],k2:[66,74],f2:[76,93],e1:[40,90],w1:[52,86],e2:[38,90],w2:[50,86]}),b:P({h:[16,86],s:[26,88],p:[54,72],k1:[70,70],f1:[78,93],k2:[68,70],f2:[76,93],e1:[38,84],w1:[52,70],e2:[36,84],w2:[50,70]}),ca:"Hanyatt",cb:"Csípő fel"},
+ "Dead bug":{a:P({h:[16,84],s:[26,86],p:[56,88],k1:[56,68],f1:[72,68],k2:[54,68],f2:[70,68],e1:[26,72],w1:[26,58],e2:[24,72],w2:[24,58]}),b:P({h:[16,84],s:[26,86],p:[56,88],k1:[73,84],f1:[91,87],k2:[54,68],f2:[70,68],e1:[26,72],w1:[26,58],e2:[13,83],w2:[3,83]}),ca:"Kar fel, térd 90°",cb:"Kar és láb ki"},
+ "Bolgár guggolás":{db:2,bench:[8,64,26],a:P({k1:[54,76],f1:[55,94],k2:[40,74],f2:[26,64]}),b:P({h:[46,32],s:[46,43],p:[46,70],k1:[60,72],f1:[60,94],k2:[36,88],f2:[24,64],e1:[47,56],w1:[47,68],e2:[45,56],w2:[45,68]}),ca:"Hátsó láb a padon",cb:"Egyenesen le"},
+ "Szűk fekvőtámasz / tolódzkodás":{bench:[4,60,32],a:P({h:[42,24],s:[40,34],p:[44,62],k1:[66,68],f1:[86,94],k2:[64,68],f2:[84,94],e1:[38,47],w1:[34,60],e2:[37,47],w2:[33,60]}),b:P({h:[44,42],s:[42,52],p:[46,80],k1:[68,82],f1:[86,94],k2:[66,82],f2:[84,94],e1:[26,48],w1:[34,60],e2:[25,48],w2:[33,60]}),ca:"Kéz a pad szélén",cb:"Könyök hátra, le"},
+ "Evezés gumiszalaggal vagy súlyzóval":{anchor:[95,56],a:P({h:[52,22],s:[48,33],p:[44,60],k1:[52,76],f1:[52,94],k2:[48,76],f2:[46,94],e1:[64,44],w1:[80,52],e2:[62,44],w2:[78,52]}),b:P({h:[52,22],s:[48,33],p:[44,60],k1:[52,76],f1:[52,94],k2:[48,76],f2:[46,94],e1:[34,46],w1:[50,50],e2:[32,46],w2:[48,50]}),ca:"Kar előre",cb:"Lapocka hátra"},
+ "Egylábas román felhúzás":{db:1,a:P({}),b:P({h:[22,48],s:[32,50],p:[56,52],k1:[56,72],f1:[56,94],k2:[72,51],f2:[90,49],e1:[33,62],w1:[34,74],e2:[31,62],w2:[32,74]}),ca:"Egy lábon",cb:"Billenj előre"},
+ "Oldalplank":{a:P({h:[18,68],s:[24,76],p:[57,84],k1:[73,88],f1:[90,92],k2:[73,88],f2:[90,92],e1:[24,92],w1:[36,92],e2:[24,62],w2:[24,48]}),ca:"Csípő fent, felső kar fel"}
+};
+function pl(a){return a.map(function(q){return q[0]+","+q[1];}).join(" ");}
+function dumbbell(q){var x=q[0],y=q[1];return '<line class="propl" x1="'+(x-5)+'" y1="'+y+'" x2="'+(x+5)+'" y2="'+y+'"/><rect class="prop" x="'+(x-7.5)+'" y="'+(y-4)+'" width="3" height="8" rx="1"/><rect class="prop" x="'+(x+4.5)+'" y="'+(y-4)+'" width="3" height="8" rx="1"/>';}
+function pose(q,o){
+  var g='<line class="gr" x1="0" y1="95" x2="100" y2="95"/>';
+  if(o.bench)g+='<rect class="bench" x="'+o.bench[0]+'" y="'+o.bench[1]+'" width="'+o.bench[2]+'" height="5" rx="1.5"/><rect class="bench" x="'+(o.bench[0]+2)+'" y="'+o.bench[1]+'" width="3" height="'+(95-o.bench[1])+'"/><rect class="bench" x="'+(o.bench[0]+o.bench[2]-5)+'" y="'+o.bench[1]+'" width="3" height="'+(95-o.bench[1])+'"/>';
+  if(o.bar!=null)g+='<line class="propl" x1="28" y1="'+o.bar+'" x2="72" y2="'+o.bar+'" style="stroke:var(--muted);stroke-width:3"/>';
+  if(o.anchor)g+='<polyline class="band" points="'+pl([q.w1,o.anchor])+'"/><circle class="prop" cx="'+o.anchor[0]+'" cy="'+o.anchor[1]+'" r="2.5"/>';
+  g+='<polyline class="ln far" points="'+pl([q.p,q.k2,q.f2])+'"/><polyline class="ln far" points="'+pl([q.s,q.e2,q.w2])+'"/>';
+  if(o.db===2)g+=dumbbell(q.w2);
+  g+='<polyline class="ln" points="'+pl([q.s,q.p])+'"/><polyline class="ln" points="'+pl([q.p,q.k1,q.f1])+'"/>';
+  g+='<line class="ln" x1="'+q.s[0]+'" y1="'+q.s[1]+'" x2="'+q.h[0]+'" y2="'+q.h[1]+'"/><circle class="hd" cx="'+q.h[0]+'" cy="'+q.h[1]+'" r="6.5"/>';
+  g+='<polyline class="ln" points="'+pl([q.s,q.e1,q.w1])+'"/>';
+  if(o.db)g+=dumbbell(q.w1);
+  return g;
+}
+function illu(name){
+  var o=ILLU[name];if(!o)return '';
+  var s='<div class="illu"><svg viewBox="0 0 220 108" role="img" aria-label="'+esc(name)+': '+esc(o.ca)+(o.b?' – '+esc(o.cb):'')+'">';
+  if(o.b){
+    s+='<g>'+pose(o.a,o)+'<text class="cap" x="50" y="105" text-anchor="middle">1. '+esc(o.ca)+'</text></g>';
+    s+='<path class="arw" d="M100 50 H118 M112 44 L118 50 L112 56"/>';
+    s+='<g transform="translate(120,0)">'+pose(o.b,o)+'<text class="cap" x="50" y="105" text-anchor="middle">2. '+esc(o.cb)+'</text></g>';
+  }else{
+    s+='<g transform="translate(60,0)">'+pose(o.a,o)+'<text class="cap" x="50" y="105" text-anchor="middle">'+esc(o.ca)+'</text></g>';
+  }
+  return s+'</svg></div>';
+}
 function lastLog(k,name){
   var ks=Object.keys(state.logs).filter(function(x){return x<k;}).sort().reverse();
   for(var i=0;i<ks.length;i++){var l=state.logs[ks[i]];if(l&&l.ex&&l.ex[name]&&l.ex[name].some(function(s){return s&&(s.kg||s.r);}))return {k:ks[i],sets:l.ex[name]};}
@@ -417,6 +480,12 @@ function vWorkout(){
     html+='<section class="card hero"><h2>'+MINI.t+'</h2><ol class="steps">'+MINI.ex.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol><p class="muted small" style="margin:0">'+MINI.desc+'</p>'+
       '<div><button class="btn" data-act="finish" data-mini="1">Minikör kész</button></div></section>';
   }
+  html+='<details class="help"><summary>Hogyan működik ez a fül?</summary><ol>'+
+    '<li>Fent válaszd ki az edzést (A, B vagy C). Alapból a mai napra tervezett jelenik meg.</li>'+
+    '<li>Minden gyakorlatnál a rajz mutatja a mozdulatot: balra a kiinduló helyzet, a nyíl után a végpont. A kék elem a súlyzó, a narancs szaggatott vonal a gumiszalag, a halványabb végtag a túloldali kar vagy láb.</li>'+
+    '<li>Alatta a sorozatok: írd be, hány kg-mal és hány ismétlést csináltál. A szürke szám a legutóbbi eredményed, ezt kell elérned vagy megdöntened.</li>'+
+    '<li>Ha legutóbb minden sorozatban megvolt a 12 ismétlés, zöld jelzés szól, hogy válts nehezebb súlyra.</li>'+
+    '<li>A végén nyomd meg az <b>Edzés kész</b> gombot. Ez kipipálja a mozgást a Ma fülön.</li></ol></details>';
   html+='<div class="seg" role="group" aria-label="Edzés választása">'+["A","B","C"].map(function(x){return '<button class="'+(x===type?'on':'')+'" data-act="wtype" data-t="'+x+'">'+x+' edzés</button>';}).join('')+'</div>';
   html+='<section class="card"><div><h2>'+w.t+'</h2><span class="muted small">Előtte 8 perc bemelegítés: 3 perc ugrókötél + ízületi mobilizálás a hengerrel. Sorozatok között 60–90 mp pihenő.</span></div>';
   w.ex.forEach(function(e,ei){
@@ -425,7 +494,7 @@ function vWorkout(){
     if(last){var full=last.sets.filter(function(s){return s&&s.r;});var goal=e.u==="sec"?parseInt(e.t.match(/(\d+) mp/)[1],10):12;
       if(full.length&&full.every(function(s){return num(s.r)>=goal;}))hint='<span class="chip good">Ideje nehezebbre váltani</span>';}
     html+='<div class="ex"><div class="head"><b>'+(ei+1)+'. '+esc(e.n)+'</b><span class="muted small">'+esc(e.t)+'</span></div>'+
-      '<span class="muted small">'+esc(e.tip)+(last?' · Legutóbb ('+fmtShort(last.k)+'): '+last.sets.filter(function(s){return s&&(s.kg||s.r);}).map(function(s){return (s.kg?s.kg+' kg × ':'')+(s.r||'?');}).join(', '):'')+'</span>'+hint;
+      illu(e.n)+'<span class="muted small">'+esc(e.tip)+(last?' · Legutóbb ('+fmtShort(last.k)+'): '+last.sets.filter(function(s){return s&&(s.kg||s.r);}).map(function(s){return (s.kg?s.kg+' kg × ':'')+(s.r||'?');}).join(', '):'')+'</span>'+hint;
     var one=e.u!=="kg";
     html+='<div class="sets'+(one?' one':'')+'"><span></span>'+(one?'<span class="hd">'+(e.u==="sec"?'Másodperc':'Ismétlés')+'</span>':'<span class="hd">Súly (kg)</span><span class="hd">Ismétlés</span>');
     for(var si=0;si<e.s;si++){var c=cur[si]||{},l=last&&last.sets[si]||{};
