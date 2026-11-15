@@ -126,7 +126,8 @@ table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .illu .band{stroke:var(--warn);stroke-width:2;stroke-dasharray:3 3;fill:none}
 .illu .bench{fill:var(--line)}
 .illu .arw{stroke:var(--accent);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.illu .cap{fill:var(--muted);font-size:9px;font-family:var(--body);font-weight:600}
+.illu .now{fill:var(--accent)}
+.illu .cap{fill:var(--muted);font-size:8px;font-family:var(--body);font-weight:600}
 details.help{background:var(--accent-soft);border-radius:12px;padding:12px 14px}
 details.help summary{cursor:pointer;font-weight:700;color:var(--accent)}
 details.help ol{margin:10px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px}
@@ -457,17 +458,44 @@ function pose(q,o){
   if(o.db)g+=dumbbell(q.w1);
   return g;
 }
+var DUR="3.4s",KT="0;0.4;0.5;0.9;1",KS="0.45 0 0.55 1;0 0 1 1;0.45 0 0.55 1;0 0 1 1";
+function an(attr,va,vb){return '<animate attributeName="'+attr+'" dur="'+DUR+'" repeatCount="indefinite" values="'+va+';'+vb+';'+vb+';'+va+';'+va+'" keyTimes="'+KT+'" calcMode="spline" keySplines="'+KS+'"/>';}
+function aline(cls,a,b){var va=pl(a),vb=pl(b);return '<polyline class="'+cls+'" points="'+va+'">'+an("points",va,vb)+'</polyline>';}
+function adb(qa,qb){var va=qa[0]+","+qa[1],vb=qb[0]+","+qb[1];
+  return '<g transform="translate('+va+')">'+dumbbell([0,0])+'<animateTransform attributeName="transform" type="translate" dur="'+DUR+'" repeatCount="indefinite" values="'+va+';'+vb+';'+vb+';'+va+';'+va+'" keyTimes="'+KT+'" calcMode="spline" keySplines="'+KS+'"/></g>';}
+function poseAnim(a,b,o){
+  var g='<line class="gr" x1="0" y1="95" x2="100" y2="95"/>';
+  if(o.bench)g+='<rect class="bench" x="'+o.bench[0]+'" y="'+o.bench[1]+'" width="'+o.bench[2]+'" height="5" rx="1.5"/><rect class="bench" x="'+(o.bench[0]+2)+'" y="'+o.bench[1]+'" width="3" height="'+(95-o.bench[1])+'"/><rect class="bench" x="'+(o.bench[0]+o.bench[2]-5)+'" y="'+o.bench[1]+'" width="3" height="'+(95-o.bench[1])+'"/>';
+  if(o.bar!=null)g+='<line class="propl" x1="28" y1="'+o.bar+'" x2="72" y2="'+o.bar+'" style="stroke:var(--muted);stroke-width:3"/>';
+  if(o.anchor)g+=aline("band",[a.w1,o.anchor],[b.w1,o.anchor])+'<circle class="prop" cx="'+o.anchor[0]+'" cy="'+o.anchor[1]+'" r="2.5"/>';
+  g+=aline("ln far",[a.p,a.k2,a.f2],[b.p,b.k2,b.f2])+aline("ln far",[a.s,a.e2,a.w2],[b.s,b.e2,b.w2]);
+  if(o.db===2)g+=adb(a.w2,b.w2);
+  g+=aline("ln",[a.s,a.p],[b.s,b.p])+aline("ln",[a.p,a.k1,a.f1],[b.p,b.k1,b.f1])+aline("ln",[a.s,a.h],[b.s,b.h]);
+  g+='<circle class="hd" cx="'+a.h[0]+'" cy="'+a.h[1]+'" r="6.5">'+an("cx",a.h[0],b.h[0])+an("cy",a.h[1],b.h[1])+'</circle>';
+  g+=aline("ln",[a.s,a.e1,a.w1],[b.s,b.e1,b.w1]);
+  if(o.db)g+=adb(a.w1,b.w1);
+  return g;
+}
+var REDUCED=false;try{REDUCED=window.matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
 function illu(name){
   var o=ILLU[name];if(!o)return '';
-  var s='<div class="illu"><svg viewBox="0 0 220 108" role="img" aria-label="'+esc(name)+': '+esc(o.ca)+(o.b?' – '+esc(o.cb):'')+'">';
-  if(o.b){
+  var lbl=esc(name)+': '+esc(o.ca)+(o.b?' – '+esc(o.cb):'');
+  if(o.b&&REDUCED){
+    var s='<div class="illu"><svg viewBox="0 0 220 108" role="img" aria-label="'+lbl+'">';
     s+='<g>'+pose(o.a,o)+'<text class="cap" x="50" y="105" text-anchor="middle">1. '+esc(o.ca)+'</text></g>';
     s+='<path class="arw" d="M100 50 H118 M112 44 L118 50 L112 56"/>';
     s+='<g transform="translate(120,0)">'+pose(o.b,o)+'<text class="cap" x="50" y="105" text-anchor="middle">2. '+esc(o.cb)+'</text></g>';
-  }else{
-    s+='<g transform="translate(60,0)">'+pose(o.a,o)+'<text class="cap" x="50" y="105" text-anchor="middle">'+esc(o.ca)+'</text></g>';
+    return s+'</svg></div>';
   }
-  return s+'</svg></div>';
+  var t='<div class="illu"><svg viewBox="0 0 160 108" role="img" aria-label="'+lbl+'"><g transform="translate(30,0)">';
+  if(o.b){
+    t+=poseAnim(o.a,o.b,o);
+    t+='<text class="cap" x="50" y="105" text-anchor="middle" opacity="1">1. '+esc(o.ca)+'<animate attributeName="opacity" dur="'+DUR+'" repeatCount="indefinite" calcMode="discrete" values="1;0;1" keyTimes="0;0.4;0.9"/></text>';
+    t+='<text class="cap now" x="50" y="105" text-anchor="middle" opacity="0">2. '+esc(o.cb)+'<animate attributeName="opacity" dur="'+DUR+'" repeatCount="indefinite" calcMode="discrete" values="0;1;0" keyTimes="0;0.4;0.9"/></text>';
+  }else{
+    t+=pose(o.a,o)+'<text class="cap" x="50" y="105" text-anchor="middle">'+esc(o.ca)+'</text>';
+  }
+  return t+'</g></svg></div>';
 }
 function dose(e){
   var reps=e.t.split("×")[1].trim(),r;
@@ -494,7 +522,7 @@ function vWorkout(){
   }
   html+='<details class="help"><summary>Hogyan működik ez a fül?</summary><ol>'+
     '<li>Fent válaszd ki az edzést (A, B vagy C). Alapból a mai napra tervezett jelenik meg.</li>'+
-    '<li>Minden gyakorlatnál a rajz mutatja a mozdulatot: balra a kiinduló helyzet, a nyíl után a végpont. A kék elem a súlyzó, a narancs szaggatott vonal a gumiszalag, a halványabb végtag a túloldali kar vagy láb.</li>'+
+    '<li>Minden gyakorlatnál egy animáció mutatja a mozdulatot: a figura a kiinduló helyzetből a végpontba megy, kicsit kitart, majd visszatér. Alatta a felirat jelzi, melyik fázisban jár. A kék elem a súlyzó, a narancs szaggatott vonal a gumiszalag, a halványabb végtag a túloldali kar vagy láb.</li>'+
     '<li>A kék címkék mutatják, hány sorozatot és sorozatonként hány ismétlést csinálj. Alatta a táblázat: soronként egy sorozat, írd be, hány kg-mal és hány ismétlést csináltál. A szürke szám a legutóbbi eredményed, ezt kell elérned vagy megdöntened.</li>'+
     '<li>Ha legutóbb minden sorozatban megvolt a 12 ismétlés, zöld jelzés szól, hogy válts nehezebb súlyra.</li>'+
     '<li>A végén nyomd meg az <b>Edzés kész</b> gombot. Ez kipipálja a mozgást a Ma fülön.</li></ol></details>';
