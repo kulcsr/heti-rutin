@@ -127,6 +127,19 @@ table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .illu .bench{fill:var(--line)}
 .illu .arw{stroke:var(--accent);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .illu .now{fill:var(--accent)}
+.musc{display:grid;grid-template-columns:minmax(0,180px) 1fr;gap:12px;align-items:center;background:var(--bg);border-radius:10px;padding:8px 12px}
+.musc svg{width:100%;height:auto;display:block}
+.musc .sil{fill:var(--muted);opacity:.22}
+.musc .silw{stroke:var(--muted);opacity:.22;fill:none;stroke-linecap:round}
+.musc .m{fill:var(--muted);opacity:.3;stroke:var(--bg);stroke-width:.8}
+.musc .m.p{fill:var(--accent);opacity:1}
+.musc .m.s{fill:var(--accent);opacity:.55}
+.musc .lab{fill:var(--muted);font-size:9px;font-family:var(--body);font-weight:600}
+.mleg{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.mleg>span{display:flex;gap:8px;align-items:baseline}
+.mleg i{width:10px;height:10px;border-radius:3px;flex:none;background:var(--accent);transform:translateY(1px)}
+.mleg i.s{opacity:.55}
+@media (max-width:360px){.musc{grid-template-columns:1fr}}
 .illu .cap{fill:var(--muted);font-size:8px;font-family:var(--body);font-weight:600}
 details.help{background:var(--accent-soft);border-radius:12px;padding:12px 14px}
 details.help summary{cursor:pointer;font-weight:700;color:var(--accent)}
@@ -506,6 +519,53 @@ function dose(e){
   else r='<span class="dz">Ismétlés: <b>'+esc(reps)+'</b></span>';
   return '<div class="dose">'+setsH+r+'</div>';
 }
+
+// ---------- muscle map: front (x 0-100) and back (x 100-200), body drawn in local 0-100 x 0-150 ----------
+var MNAME={chest:"mell",delt:"váll",bi:"bicepsz",tri:"tricepsz",fore:"alkar",abs:"has",obl:"ferde hasizom",quad:"comb eleje",ham:"comb hátsó része",glute:"farizom",calf:"vádli",trap:"felső hát",lat:"széles hátizom",lowb:"derék"};
+var MUSC={
+ "Goblet guggolás":{p:["quad","glute"],s:["abs","ham"]},
+ "Fekvőtámasz":{p:["chest","tri"],s:["delt","abs"]},
+ "Egykezes evezés":{p:["lat","trap"],s:["bi","delt","fore"]},
+ "Román felhúzás":{p:["ham","glute"],s:["lowb","fore","trap"]},
+ "Plank":{p:["abs"],s:["obl","delt","glute"]},
+ "Hátralépéses kitörés":{p:["quad","glute"],s:["ham","calf"]},
+ "Vállból nyomás állva":{p:["delt"],s:["tri","trap","abs"]},
+ "Húzódzkodás":{p:["lat"],s:["bi","fore","trap"]},
+ "Csípőemelés":{p:["glute"],s:["ham","lowb"]},
+ "Dead bug":{p:["abs"],s:["obl","quad"]},
+ "Bolgár guggolás":{p:["quad","glute"],s:["ham","abs"]},
+ "Szűk fekvőtámasz / tolódzkodás":{p:["tri"],s:["chest","delt"]},
+ "Evezés gumiszalaggal vagy súlyzóval":{p:["trap","lat"],s:["bi","delt"]},
+ "Egylábas román felhúzás":{p:["ham","glute"],s:["lowb","obl","calf"]},
+ "Oldalplank":{p:["obl"],s:["abs","delt","glute"]}
+};
+function silhouette(){
+  return '<circle class="sil" cx="50" cy="12" r="8.5"/><rect class="sil" x="46" y="19" width="8" height="9"/>'+
+    '<path class="sil" d="M30 28 Q50 24 70 28 L67 60 Q64 76 66 92 L34 92 Q36 76 33 60 Z"/>'+
+    '<polyline class="silw" points="29,31 24,60 20,90" stroke-width="9"/><polyline class="silw" points="71,31 76,60 80,90" stroke-width="9"/>'+
+    '<polyline class="silw" points="42,90 42,118 42,143" stroke-width="13"/><polyline class="silw" points="58,90 58,118 58,143" stroke-width="13"/>';
+}
+function mz(id,on,shape){var c=on.p.indexOf(id)>=0?" p":(on.s.indexOf(id)>=0?" s":"");return shape.replace(/<(\w+) /g,'<$1 class="m'+c+'" ');}
+function pair(fn){return fn(1)+fn(-1);}
+function mirror(x,d){return d===1?x:100-x;}
+function muscleMap(name){
+  var on=MUSC[name];if(!on)return '';
+  var e=function(id,cx,cy,rx,ry){return pair(function(d){return mz(id,on,'<ellipse cx="'+mirror(cx,d)+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'"/>');});};
+  var front=silhouette()+
+    e("delt",31,33,7,6)+e("chest",42,40,9,7)+e("bi",26,48,4.5,10)+e("fore",22,74,4,11)+
+    mz("abs",on,'<rect x="44" y="50" width="12" height="28" rx="4"/>')+e("obl",37.5,63,3.8,10)+
+    e("quad",42,105,7,16)+e("calf",42,131,4,10);
+  var back=silhouette()+
+    mz("trap",on,'<path d="M50 22 L37 31 L50 48 L63 31 Z"/>')+e("delt",31,33,7,6)+e("lat",40,54,7.5,12)+
+    e("tri",26,48,4.5,10)+e("fore",22,74,4,11)+mz("lowb",on,'<rect x="44" y="63" width="12" height="15" rx="4"/>')+
+    e("glute",43,89,8,7)+e("ham",42,109,7,13)+e("calf",42,131,5,9);
+  var svg='<svg viewBox="0 0 200 160" role="img" aria-label="Dolgozó izmok: '+on.p.concat(on.s).map(function(i){return MNAME[i];}).join(", ")+'">'+
+    '<g>'+front+'<text class="lab" x="50" y="157" text-anchor="middle">Elöl</text></g>'+
+    '<g transform="translate(100,0)">'+back+'<text class="lab" x="50" y="157" text-anchor="middle">Hátul</text></g></svg>';
+  var leg='<div class="mleg"><span><i></i><span><b>Fő izom:</b> '+on.p.map(function(i){return MNAME[i];}).join(", ")+'</span></span>'+
+    '<span><i class="s"></i><span><b>Besegít:</b> '+on.s.map(function(i){return MNAME[i];}).join(", ")+'</span></span></div>';
+  return '<div class="musc">'+svg+leg+'</div>';
+}
 function lastLog(k,name){
   var ks=Object.keys(state.logs).filter(function(x){return x<k;}).sort().reverse();
   for(var i=0;i<ks.length;i++){var l=state.logs[ks[i]];if(l&&l.ex&&l.ex[name]&&l.ex[name].some(function(s){return s&&(s.kg||s.r);}))return {k:ks[i],sets:l.ex[name]};}
@@ -523,6 +583,7 @@ function vWorkout(){
   html+='<details class="help"><summary>Hogyan működik ez a fül?</summary><ol>'+
     '<li>Fent válaszd ki az edzést (A, B vagy C). Alapból a mai napra tervezett jelenik meg.</li>'+
     '<li>Minden gyakorlatnál egy animáció mutatja a mozdulatot: a figura a kiinduló helyzetből a végpontba megy, kicsit kitart, majd visszatér. Alatta a felirat jelzi, melyik fázisban jár. A kék elem a súlyzó, a narancs szaggatott vonal a gumiszalag, a halványabb végtag a túloldali kar vagy láb.</li>'+
+    '<li>Az emberke-ábra elölről és hátulról mutatja, melyik izom dolgozik: sötétkék a fő izom, halványkék a besegítő izmok.</li>'+
     '<li>A kék címkék mutatják, hány sorozatot és sorozatonként hány ismétlést csinálj. Alatta a táblázat: soronként egy sorozat, írd be, hány kg-mal és hány ismétlést csináltál. A szürke szám a legutóbbi eredményed, ezt kell elérned vagy megdöntened.</li>'+
     '<li>Ha legutóbb minden sorozatban megvolt a 12 ismétlés, zöld jelzés szól, hogy válts nehezebb súlyra.</li>'+
     '<li>A végén nyomd meg az <b>Edzés kész</b> gombot. Ez kipipálja a mozgást a Ma fülön.</li></ol></details>';
@@ -534,7 +595,7 @@ function vWorkout(){
     if(last){var full=last.sets.filter(function(s){return s&&s.r;});var goal=e.u==="sec"?parseInt(e.t.match(/(\d+) mp/)[1],10):12;
       if(full.length&&full.every(function(s){return num(s.r)>=goal;}))hint='<span class="chip good">Ideje nehezebbre váltani</span>';}
     html+='<div class="ex"><div class="head"><b>'+(ei+1)+'. '+esc(e.n)+'</b></div>'+dose(e)+
-      illu(e.n)+'<span class="muted small">'+esc(e.tip)+(last?' · Legutóbb ('+fmtShort(last.k)+'): '+last.sets.filter(function(s){return s&&(s.kg||s.r);}).map(function(s){return (s.kg?s.kg+' kg × ':'')+(s.r||'?');}).join(', '):'')+'</span>'+hint;
+      illu(e.n)+muscleMap(e.n)+'<span class="muted small">'+esc(e.tip)+(last?' · Legutóbb ('+fmtShort(last.k)+'): '+last.sets.filter(function(s){return s&&(s.kg||s.r);}).map(function(s){return (s.kg?s.kg+' kg × ':'')+(s.r||'?');}).join(', '):'')+'</span>'+hint;
     var one=e.u!=="kg";
     html+='<div class="sets'+(one?' one':'')+'"><span class="hd">Sorozat</span>'+(one?'<span class="hd">'+(e.u==="sec"?'Másodperc':'Ismétlés')+'</span>':'<span class="hd">Súly (kg)</span><span class="hd">Ismétlés</span>');
     for(var si=0;si<e.s;si++){var c=cur[si]||{},l=last&&last.sets[si]||{};
